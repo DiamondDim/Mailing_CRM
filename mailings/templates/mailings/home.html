@@ -1,0 +1,67 @@
+{% extends 'mailings/base.html' %}
+
+{% block title %}Главная — Mailing CRM{% endblock %}
+
+{% block content %}
+<div class="py-3">
+    <h1 class="mb-4 fw-bold">Панель управления рассылками</h1>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card-stat bg-teal">
+            <div class="stat-title">Всего рассылок</div>
+            <div class="stat-value">{{ total_mailings }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-stat bg-blue">
+            <div class="stat-title">Активные рассылки</div>
+            <div class="stat-value">{{ active_mailings }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-stat bg-purple">
+            <div class="stat-title">Всего клиентов</div>
+            <div class="stat-value">{{ total_clients }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="mb-4">
+    <a href="{% url 'client_create' %}" class="btn btn-primary me-2">Добавить клиента</a>
+    <a href="{% url 'message_create' %}" class="btn btn-outline-primary me-2">Создать сообщение</a>
+    <a href="{% url 'mailing_create' %}" class="btn btn-outline-primary">Создать рассылку</a>
+</div>
+
+{% if mailings %}
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead style="background-color: var(--color-teal-light);">
+                <tr>
+                    <th class="border-0 py-3">Рассылка</th>
+                    <th class="border-0 py-3">Клиентов</th>
+                    <th class="border-0 py-3">Статус</th>
+                    <th class="border-0 py-3">Отправок</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mailing in mailings %}
+                <tr>
+                    <td>{{ mailing.message.subject|truncatechars:40 }}</td>
+                    <td>{{ mailing.recipients.count }}</td>
+                    <td>
+                        <span class="badge badge-status-{{ mailing.status }} px-3 py-2 rounded-pill">
+                            {{ mailing.get_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ mailing.attempts.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

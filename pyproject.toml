@@ -1,0 +1,23 @@
+[project]
+name = "mailing-crm"
+version = "0.1.0"
+description = "Сервис управления рассылками"
+authors = [
+    {name = "Дмитрий",email = "mecheny91@yandex.ru"}
+]
+readme = "README.md"
+requires-python = "^3.13"
+dependencies = [
+    "django (>=6.1.2,<7.0.0)",
+    "psycopg2-binary (>=2.9.13,<3.0.0)",
+    "python-dotenv (>=1.2.4,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false
+

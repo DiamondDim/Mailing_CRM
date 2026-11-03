@@ -1,0 +1,17 @@
+{% extends 'mailings/base.html' %}
+
+{% block title %}Удаление рассылки — Mailing CRM{% endblock %}
+
+{% block content %}
+<div class="alert alert-danger">
+    <h4 class="alert-heading">Подтверждение удаления</h4>
+    <p>Вы действительно хотите удалить рассылку <strong>#{{ object.pk }}</strong> ({{ object.message.subject }})?</p>
+    <p class="mb-0 text-warning">Это действие нельзя отменить. История попыток отправки также будет удалена.</p>
+    <hr>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Да, удалить</button>
+        <a href="{% url 'mailing_detail' object.pk %}" class="btn btn-secondary">Отмена</a>
+    </form>
+</div>
+{% endblock %}
