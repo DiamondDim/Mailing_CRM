@@ -1,6 +1,9 @@
 from django import forms
 from django.utils import timezone
 from .models import Client, Message, Mailing
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+from .models import Profile
 
 
 class ClientForm(forms.ModelForm):
@@ -79,16 +82,80 @@ class MailingForm(forms.ModelForm):
         end_time = cleaned_data.get('end_time')
 
         if start_time and end_time:
-            # Проверка: start_time не может быть в прошлом
             if start_time < timezone.now():
-                raise forms.ValidationError(
-                    "Дата и время начала не могут быть в прошлом."
-                )
-
-            # Проверка: start_time должен быть раньше end_time
+                raise forms.ValidationError("Дата и время начала не могут быть в прошлом.")
             if start_time >= end_time:
-                raise forms.ValidationError(
-                    "Дата начала должна быть строго раньше даты окончания."
-                )
+                raise forms.ValidationError("Дата начала должна быть строго раньше даты окончания.")
 
         return cleaned_data
+
+
+class RegisterForm(UserCreationForm):
+    """Кастомная форма регистрации с email и стилями Bootstrap"""
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'example@mail.ru',
+            'style': 'font-family: Montserrat, sans-serif;'
+        })
+    )
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password1', 'password2']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Применяем Bootstrap-стили ко всем полям
+        for field_name in self.fields:
+            field = self.fields[field_name]
+            if field_name in ['password1', 'password2']:
+                field.widget = forms.PasswordInput(attrs={
+                    'class': 'form-control',
+                    'placeholder': 'Пароль' if field_name == 'password1' else 'Подтвердите пароль',
+                    'style': 'font-family: Montserrat, sans-serif;'
+                })
+            elif field_name == 'username':
+                field.widget.attrs.update({
+                    'class': 'form-control',
+                    'placeholder': 'Имя пользователя',
+                    'style': 'font-family: Montserrat, sans-serif;'
+                })
+
+
+class ProfileForm(forms.ModelForm):
+    """Форма редактирования профиля (аватар + дата рождения)"""
+    first_name = forms.CharField(
+        max_length=30,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Имя',
+            'style': 'font-family: Montserrat, sans-serif;'
+        })
+    )
+    last_name = forms.CharField(
+        max_length=30,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Фамилия',
+            'style': 'font-family: Montserrat, sans-serif;'
+        })
+    )
+
+    class Meta:
+        model = Profile
+        fields = ['avatar', 'date_of_birth']
+        widgets = {
+            'avatar': forms.ClearableFileInput(attrs={
+                'class': 'form-control',
+                'style': 'font-family: Montserrat, sans-serif;'
+            }),
+            'date_of_birth': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
+                'style': 'font-family: Montserrat, sans-serif;'
+            }),
+        }

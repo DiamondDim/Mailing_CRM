@@ -19,62 +19,62 @@
             --color-purple: #a855f7;
             --color-bg: #f8fafc;
         }
-        
+
         body {
             font-family: 'Montserrat', sans-serif;
             background-color: var(--color-bg);
             color: var(--color-graphite);
         }
-        
+
         .navbar {
             background-color: var(--color-graphite-dark) !important;
             padding: 1rem 0;
         }
-        
+
         .navbar-brand {
             color: var(--color-teal) !important;
             font-weight: 700;
             font-size: 1.3rem;
         }
-        
+
         .nav-link {
             color: #cbd5e1 !important;
             transition: color 0.2s;
         }
-        
+
         .nav-link:hover {
             color: var(--color-teal) !important;
         }
-        
+
         .btn-primary {
             background-color: var(--color-teal);
             border-color: var(--color-teal);
         }
-        
+
         .btn-primary:hover {
             background-color: var(--color-teal-dark);
             border-color: var(--color-teal-dark);
         }
-        
+
         .btn-outline-primary {
             color: var(--color-teal);
             border-color: var(--color-teal);
         }
-        
+
         .btn-outline-primary:hover {
             background-color: var(--color-teal);
             border-color: var(--color-teal);
         }
-        
+
         .btn-success {
             background-color: var(--color-teal-dark);
             border-color: var(--color-teal-dark);
         }
-        
+
         .table-dark {
             background-color: var(--color-graphite);
         }
-        
+
         .card-stat {
             border: none;
             border-radius: 12px;
@@ -82,29 +82,29 @@
             padding: 1.5rem;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
-        
+
         .card-stat .stat-title {
             font-size: 0.95rem;
             font-weight: 500;
             opacity: 0.95;
             margin-bottom: 0.5rem;
         }
-        
+
         .card-stat .stat-value {
             font-size: 2.5rem;
             font-weight: 700;
             margin: 0;
         }
-        
+
         .bg-teal { background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); }
         .bg-blue { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
         .bg-purple { background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); }
-        
+
         .badge-status-started { background-color: var(--color-teal); }
         .badge-status-created { background-color: #f59e0b; }
         .badge-status-completed { background-color: #64748b; }
     </style>
-    
+
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -115,12 +115,40 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav me-auto">
                     <li class="nav-item"><a class="nav-link" href="{% url 'client_list' %}">Клиенты</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'message_list' %}">Сообщения</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'mailing_list' %}">Рассылки</a></li>
+                </ul>
+                <ul class="navbar-nav">
                     {% if user.is_authenticated %}
-                        <li class="nav-item"><span class="nav-link text-muted">({{ user.username }})</span></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {% if user.profile.avatar %}
+                                    <img src="{{ user.profile.avatar.url }}" alt="Аватар" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
+                                {% else %}
+                                    <span class="me-2">👤</span>
+                                {% endif %}
+                                {{ user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="{% url 'profile' %}">Мой профиль</a></li>
+                                <li><a class="dropdown-item" href="{% url 'profile_edit' %}">Редактировать</a></li>
+                                {% if user.is_staff %}
+                                    <li><a class="dropdown-item" href="/admin/" target="_blank">Панель администратора</a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item text-danger">Выйти</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Вход</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Регистрация</a></li>
                     {% endif %}
                 </ul>
             </div>

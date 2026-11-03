@@ -1,0 +1,19 @@
+{% extends 'mailings/base.html' %}
+
+{% block title %}Ошибка активации — Mailing CRM{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-8 col-lg-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-5 text-center">
+                <h2 class="fw-bold mb-4 text-danger">❌ Ошибка активации</h2>
+                <p class="text-muted mb-4">
+                    Ссылка активации недействительна или уже была использована.
+                </p>
+                <a href="{% url 'register' %}" class="btn btn-primary btn-lg">Зарегистрироваться заново</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

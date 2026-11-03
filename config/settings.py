@@ -34,6 +34,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'mailings.middleware.ClearCacheOnAuthMiddleware',  # ← Middleware для очистки кэша
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -82,12 +83,44 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# ==========================================
 # Email настройки для Django 6.1+
+# ==========================================
+#EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.yandex.ru')
+#EMAIL_PORT = int(os.getenv('EMAIL_PORT', 465))
+#EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+#EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+#EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'True').lower() in ('true', '1', 'yes')
+#DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
+
 MAILERS = {
     'default': {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
 
-# Переменная для from_email (не начинается с EMAIL_, поэтому не конфликтует)
-DEFAULT_FROM_EMAIL = 'mecheny91@yandex.ru'
+# ==========================================
+# Кеширование (Redis с протоколом RESP2)
+# ==========================================
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': os.getenv('REDIS_URL', 'redis://127.0.0.1:6379/1'),
+        'OPTIONS': {
+            'protocol': 2,  # Используем RESP2 для совместимости
+        },
+    }
+}
+
+# ==========================================
+# Настройки аутентификации
+# ==========================================
+LOGIN_REDIRECT_URL = 'home'  # Куда перенаправлять после входа
+LOGIN_URL = 'login'           # Страница входа
+LOGOUT_REDIRECT_URL = 'login' # Куда перенаправлять после выхода
+
+# ==========================================
+# Медиафайлы (аватары)
+# ==========================================
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'

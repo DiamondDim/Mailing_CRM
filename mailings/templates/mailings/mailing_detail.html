@@ -4,8 +4,9 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Рассылка #{{ mailing.pk }} 
-        <span class="badge bg-{% if mailing.status == 'started' %}success{% elif mailing.status == 'created' %}secondary{% else %}danger{% endif %}">
+    <h1 class="fw-bold">
+        Рассылка #{{ mailing.pk }}
+        <span class="badge bg-{% if mailing.status == 'started' %}success{% elif mailing.status == 'created' %}warning{% else %}secondary{% endif %} ms-2">
             {{ mailing.get_status_display }}
         </span>
     </h1>
@@ -18,21 +19,65 @@
     </div>
 </div>
 
-<div class="card mb-4">
+<!-- Основная информация -->
+<div class="card border-0 shadow-sm mb-4">
     <div class="card-body">
-        <h5 class="card-title">Тема: {{ mailing.message.subject }}</h5>
+        <h5 class="card-title fw-bold">Тема: {{ mailing.message.subject }}</h5>
         <p class="card-text">{{ mailing.message.body|linebreaks }}</p>
         <hr>
-        <p><strong>Начало отправки:</strong> {{ mailing.start_time|date:"d.m.Y H:i" }}</p>
-        <p><strong>Окончание отправки:</strong> {{ mailing.end_time|date:"d.m.Y H:i" }}</p>
-        <p><strong>Количество получателей:</strong> {{ mailing.recipients.count }}</p>
+        <p class="mb-1"><strong>Начало отправки:</strong> {{ mailing.start_time|date:"d.m.Y H:i" }}</p>
+        <p class="mb-1"><strong>Окончание отправки:</strong> {{ mailing.end_time|date:"d.m.Y H:i" }}</p>
+        <p class="mb-0"><strong>Количество получателей:</strong> {{ mailing.recipients.count }}</p>
     </div>
 </div>
 
-<h3 class="mb-3">История попыток отправки</h3>
+<!--  Статистика доставок -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-light fw-bold">
+         Статистика доставок
+    </div>
+    <div class="card-body">
+        <div class="row text-center">
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <h6 class="text-muted mb-1">Всего попыток</h6>
+                    <h3 class="mb-0">{{ total_attempts }}</h3>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <h6 class="text-muted mb-1">Успешно</h6>
+                    <h3 class="mb-0 text-success">{{ success_attempts }}</h3>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <h6 class="text-muted mb-1">Процент доставки</h6>
+                    <h3 class="mb-0 {% if success_rate >= 80 %}text-success{% elif success_rate >= 50 %}text-warning{% else %}text-danger{% endif %}">
+                        {{ success_rate }}%
+                    </h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Прогресс-бар -->
+        <div class="mt-3">
+            <div class="progress" style="height: 25px;">
+                <div class="progress-bar bg-success" role="progressbar"
+                     style="width: {{ success_rate }}%;"
+                     aria-valuenow="{{ success_rate }}" aria-valuemin="0" aria-valuemax="100">
+                    {{ success_rate }}%
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- История попыток отправки -->
+<h3 class="mb-3 fw-bold">История попыток отправки</h3>
 <div class="table-responsive">
-    <table class="table table-sm table-bordered">
-        <thead class="table-light">
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
             <tr>
                 <th>Дата и время</th>
                 <th>Статус</th>

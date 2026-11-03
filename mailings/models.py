@@ -1,6 +1,9 @@
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 class Client(models.Model):
@@ -117,3 +120,31 @@ class MailingAttempt(models.Model):
         verbose_name = "Попытка рассылки"
         verbose_name_plural = "Попытки рассылок"
         ordering = ['-attempt_time']
+
+
+class Profile(models.Model):
+    """Расширение модели User: аватар и дата рождения"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name='Аватар')
+    date_of_birth = models.DateField(blank=True, null=True, verbose_name='Дата рождения')
+
+    class Meta:
+        verbose_name = 'Профиль'
+        verbose_name_plural = 'Профили'
+
+    def __str__(self):
+        return f'Профиль {self.user.username}'
+
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    """Автоматически создаём Profile при создании User"""
+    if created:
+        Profile.objects.create(user=instance)
+
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    """Сохраняем Profile при сохранении User"""
+    if hasattr(instance, 'profile'):
+        instance.profile.save()
