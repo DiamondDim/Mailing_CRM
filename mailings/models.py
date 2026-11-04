@@ -11,8 +11,6 @@ class Client(models.Model):
     email = models.EmailField(unique=True, verbose_name="Email")
     full_name = models.CharField(max_length=150, verbose_name="Ф.И.О.")
     comment = models.TextField(blank=True, null=True, verbose_name="Комментарий")
-
-    # ЗАДЕЛ НА ЧАСТЬ 2: Владелец клиента
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -33,6 +31,14 @@ class Message(models.Model):
     """Шаблон сообщения"""
     subject = models.CharField(max_length=200, verbose_name="Тема письма")
     body = models.TextField(verbose_name="Тело письма")
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,  # ← ИСПОЛЬЗУЕМ settings.AUTH_USER_MODEL
+        on_delete=models.CASCADE,
+        related_name="messages",
+        verbose_name="Владелец",
+        null=True,
+        blank=True,
+    )
 
     class Meta:
         verbose_name = "Сообщение"
@@ -47,6 +53,7 @@ class Mailing(models.Model):
     STATUS_CREATED = 'created'
     STATUS_STARTED = 'started'
     STATUS_COMPLETED = 'completed'
+
     STATUS_CHOICES = [
         (STATUS_CREATED, 'Создана'),
         (STATUS_STARTED, 'Запущена'),
@@ -67,8 +74,6 @@ class Mailing(models.Model):
     recipients = models.ManyToManyField(
         Client, related_name='mailings', verbose_name="Получатели"
     )
-
-    # ЗАДЕЛ НА ЧАСТЬ 2: Владелец рассылки
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -104,6 +109,7 @@ class MailingAttempt(models.Model):
     """Лог попыток отправки"""
     STATUS_SUCCESS = 'success'
     STATUS_FAILED = 'failed'
+
     STATUS_CHOICES = [
         (STATUS_SUCCESS, 'Успешно'),
         (STATUS_FAILED, 'Не успешно'),

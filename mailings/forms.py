@@ -75,6 +75,12 @@ class MailingForm(forms.ModelForm):
             }),
         }
 
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user is not None:
+            self.fields['message'].queryset = Message.objects.filter(owner=user)
+            self.fields['recipients'].queryset = Client.objects.filter(owner=user)
+
     def clean(self):
         """Валидация дат по ТЗ: start_time не в прошлом и раньше end_time."""
         cleaned_data = super().clean()

@@ -100,6 +100,11 @@ class MessageListView(LoginRequiredMixin, ListView):
     template_name = 'mailings/message_list.html'
     context_object_name = 'messages'
 
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return Message.objects.all()
+        return Message.objects.filter(owner=self.request.user)
+
 
 class MessageCreateView(LoginRequiredMixin, CreateView):
     model = Message
@@ -107,15 +112,19 @@ class MessageCreateView(LoginRequiredMixin, CreateView):
     template_name = 'mailings/message_form.html'
     success_url = reverse_lazy('message_list')
 
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
 
-class MessageUpdateView(LoginRequiredMixin, UpdateView):
+
+class MessageUpdateView(LoginRequiredMixin, OwnerRequiredMixin, UpdateView):
     model = Message
     form_class = MessageForm
     template_name = 'mailings/message_form.html'
     success_url = reverse_lazy('message_list')
 
 
-class MessageDeleteView(LoginRequiredMixin, DeleteView):
+class MessageDeleteView(LoginRequiredMixin, OwnerRequiredMixin, DeleteView):
     model = Message
     template_name = 'mailings/message_confirm_delete.html'
     success_url = reverse_lazy('message_list')
@@ -139,6 +148,11 @@ class MailingDetailView(LoginRequiredMixin, DetailView):
     model = Mailing
     template_name = 'mailings/mailing_detail.html'
     context_object_name = 'mailing'
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return Mailing.objects.all()
+        return Mailing.objects.filter(owner=self.request.user)
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
@@ -164,6 +178,11 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
     template_name = 'mailings/mailing_form.html'
     success_url = reverse_lazy('mailing_list')
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
     def form_valid(self, form):
         form.instance.owner = self.request.user
         return super().form_valid(form)
@@ -174,6 +193,11 @@ class MailingUpdateView(LoginRequiredMixin, OwnerRequiredMixin, UpdateView):
     form_class = MailingForm
     template_name = 'mailings/mailing_form.html'
     success_url = reverse_lazy('mailing_list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
 
 class MailingDeleteView(LoginRequiredMixin, OwnerRequiredMixin, DeleteView):
@@ -187,6 +211,11 @@ class MailingDeleteView(LoginRequiredMixin, OwnerRequiredMixin, DeleteView):
 # ==========================================
 class SendMailingView(LoginRequiredMixin, View):
     def post(self, request, pk):
+        if request.user.is_superuser:
+            queryset = Mailing.objects.all()
+        else:
+            queryset = Mailing.objects.filter(owner=request.user)
+
         mailing = get_object_or_404(Mailing, pk=pk)
         mailing.update_status()
 

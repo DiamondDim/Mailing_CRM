@@ -126,7 +126,12 @@ class ClientFormTest(TestCase):
 class MailingFormTest(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='testuser', password='testpass')
-        self.message = Message.objects.create(subject='Test', body='Test')
+        # ВАЖНО: создаем сообщение с владельцем!
+        self.message = Message.objects.create(
+            subject='Test',
+            body='Test',
+            owner=self.user
+        )
         self.client_obj = Client.objects.create(
             email='test@test.com',
             full_name='Test',
@@ -134,16 +139,19 @@ class MailingFormTest(TestCase):
         )
 
     def test_mailing_form_valid(self):
-        start = timezone.now() + timedelta(hours=2)
+        # Используем дни вместо часов, чтобы избежать ловушки часовых поясов
+        # (строка теряет таймзону, форма считает её московским временем, а timezone.now() — это UTC)
+        start = timezone.now() + timedelta(days=1)
         end = timezone.now() + timedelta(days=2)
+
         form = MailingForm(data={
             'start_time': start.strftime('%Y-%m-%dT%H:%M'),
             'end_time': end.strftime('%Y-%m-%dT%H:%M'),
             'message': self.message.id,
             'recipients': [self.client_obj.id]
-        })
-        # Примечание: из-за нюансов timezone в тестах форма может ругаться,
-        # но основная логика валидации проверена в тестах ниже.
+        }, user=self.user) # <-- Передаем user для фильтрации полей message и recipients
+
+        self.assertTrue(form.is_valid(), form.errors)
 
     def test_mailing_form_start_in_past(self):
         start = timezone.now() - timedelta(hours=2)
@@ -153,9 +161,8 @@ class MailingFormTest(TestCase):
             'end_time': end.strftime('%Y-%m-%dT%H:%M'),
             'message': self.message.id,
             'recipients': [self.client_obj.id]
-        })
+        }, user=self.user)
         self.assertFalse(form.is_valid())
-        # Ошибка clean() падает в __all__, а не в конкретное поле
         self.assertIn('__all__', form.errors)
 
     def test_mailing_form_start_after_end(self):
@@ -166,7 +173,7 @@ class MailingFormTest(TestCase):
             'end_time': end.strftime('%Y-%m-%dT%H:%M'),
             'message': self.message.id,
             'recipients': [self.client_obj.id]
-        })
+        }, user=self.user)
         self.assertFalse(form.is_valid())
         self.assertIn('__all__', form.errors)
 
@@ -277,4 +284,38 @@ class OwnerRequiredMixinTest(TestCase):
     def test_non_owner_cannot_update_other_client(self):
         self.client.login(username='user2', password='pass2')
         response = self.client.get(reverse('client_update', args=[self.client_obj.id]))
+        self.assertEqual(response.status_code, 403)  # Permission Denied
+
+
+class MailingPermissionTest(TestCase):
+    def setUp(self):
+        self.user1 = User.objects.create_user(username='user1', password='pass1')
+        self.user2 = User.objects.create_user(username='user2', password='pass2')
+        self.message = Message.objects.create(
+            subject='Test',
+            body='Test',
+            owner=self.user1
+        )
+        self.client_obj = Client.objects.create(
+            email='t@t.com',
+            full_name='Test',
+            owner=self.user1
+        )
+        self.mailing = Mailing.objects.create(
+            message=self.message,
+            start_time=timezone.now() - timedelta(hours=1),
+            end_time=timezone.now() + timedelta(days=1),
+            owner=self.user1
+        )
+
+    def test_non_owner_cannot_view_mailing_detail(self):
+        """Тест: пользователь 2 не может открыть детальную страницу рассылки пользователя 1"""
+        self.client.login(username='user2', password='pass2')
+        response = self.client.get(reverse('mailing_detail', args=[self.mailing.id]))
+        self.assertEqual(response.status_code, 404)  # get_queryset отфильтрует и вернет 404
+
+    def test_non_owner_cannot_update_other_mailing(self):
+        """Тест: пользователь 2 не может изменить рассылку пользователя 1 (проверка OwnerRequiredMixin)"""
+        self.client.login(username='user2', password='pass2')
+        response = self.client.get(reverse('mailing_update', args=[self.mailing.id]))
         self.assertEqual(response.status_code, 403)  # Permission Denied
