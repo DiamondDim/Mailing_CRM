@@ -1,0 +1,19 @@
+{% extends 'mailings/base.html' %}
+
+{% block title %}Аккаунт активирован — Mailing CRM{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-8 col-lg-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-5 text-center">
+                <h2 class="fw-bold mb-4" style="color: var(--color-teal);">✅ Аккаунт активирован!</h2>
+                <p class="text-muted mb-4">
+                    Поздравляем, <strong>{{ user.username }}</strong>! Ваш аккаунт успешно активирован.
+                </p>
+                <a href="{% url 'home' %}" class="btn btn-primary btn-lg">Перейти на главную</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

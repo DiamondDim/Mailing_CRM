@@ -1,0 +1,26 @@
+{% extends 'mailings/base.html' %}
+
+{% block title %}Регистрация успешна — Mailing CRM{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-8 col-lg-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-5 text-center">
+                <h2 class="fw-bold mb-4" style="color: var(--color-teal);">Регистрация успешна!</h2>
+                <p class="text-muted mb-4">
+                    На адрес <strong>{{ email }}</strong> отправлено письмо со ссылкой для подтверждения аккаунта.
+                </p>
+                <div class="alert alert-info text-start small">
+                    <strong>Для демонстрации наставнику:</strong><br>
+                    Ссылка активации выведена в консоль сервера (терминал). 
+                    Скопируйте её, вставьте в браузер, и аккаунт будет активирован.
+                    <br><br>
+                    <em>Либо войдите в админ-панель под суперпользователем и поставьте галочку "Активен" у этого пользователя.</em>
+                </div>
+                <a href="{% url 'login' %}" class="btn btn-primary btn-lg">Вернуться ко входу</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
