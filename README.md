@@ -118,6 +118,18 @@ mailing_crm/
 ```
 </details>
 
+## 📝 Команды управления
+
+| Команда | Описание |
+|---------|----------|
+| `poetry run python manage.py runserver` | Запуск локального сервера разработки |
+| `poetry run python manage.py migrate` | Применение миграций к базе данных |
+| `poetry run python manage.py makemigrations` | Создание новых миграций при изменении моделей |
+| `poetry run python manage.py createsuperuser` | Создание учетной записи администратора (суперпользователя) |
+| `poetry run python manage.py shell` | Запуск интерактивной оболочки Django (Python shell) |
+| `poetry run python manage.py test mailings` | Запуск полного набора тестов приложения `mailings` (24 теста) |
+| `poetry run python manage.py test mailings -v 2` | Запуск тестов с подробным выводом информации |
+
 ## 👤 Роли
 
 - Пользователь: управляет своими клиентами и рассылками.
