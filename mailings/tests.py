@@ -319,3 +319,15 @@ class MailingPermissionTest(TestCase):
         self.client.login(username='user2', password='pass2')
         response = self.client.get(reverse('mailing_update', args=[self.mailing.id]))
         self.assertEqual(response.status_code, 403)  # Permission Denied
+
+def test_non_owner_cannot_send_other_mailing(self):
+    self.client.login(username="user2", password="pass2")
+
+    response = self.client.post(
+        reverse("mailing_send", args=[self.mailing.id])
+    )
+
+    self.assertEqual(response.status_code, 404)
+    self.assertFalse(
+        MailingAttempt.objects.filter(mailing=self.mailing).exists()
+    )

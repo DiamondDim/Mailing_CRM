@@ -216,7 +216,7 @@ class SendMailingView(LoginRequiredMixin, View):
         else:
             queryset = Mailing.objects.filter(owner=request.user)
 
-        mailing = get_object_or_404(Mailing, pk=pk)
+        mailing = get_object_or_404(queryset, pk=pk)
         mailing.update_status()
 
         now = timezone.now()
